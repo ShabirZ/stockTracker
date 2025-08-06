@@ -30,17 +30,16 @@ def get_tickers():
 
 
 
-def get_stock_data(offset,tickers):
+def get_stock_data(offset,curr_ticker):
     load_dotenv()
     API_KEY = os.getenv("API_KEY")
     
-    #symbol_string = ",".join(tickers)
-    #url = f'https://financialmodelingprep.com/api/v3/quote/{symbol_string}?apikey={API_KEY}'
-    symbol = "AAPL"
+
     #url = f"https://financialmodelingprep.com/api/v3/profile/{symbol}?apikey={API_KEY}"
-    url = f"https://financialmodelingprep.com/api/v3/ratios/AAPL?apikey={API_KEY}"
+    url = f"https://financialmodelingprep.com/api/v3/ratios/{curr_ticker}?apikey={API_KEY}"
 
     print(url)
+    stock_data_json_path = "../stock_data.json"
     response = requests.get(url)
     if response.status_code == 200:
         return response.json()
@@ -53,11 +52,27 @@ def get_financials():
     json_data = load_json_from_file(json_path)
     offset = json_data["offset"]
     tickers = get_tickers()
-    batch_tickers = tickers[offset:min(offset+5, len(tickers))]
-    print(batch_tickers)
-    print(get_stock_data(offset,batch_tickers))
-    #json_data["offset"]+=100
-    #save_json_to_file(json_path, json_data)
+    stock_dict = {}
+    while True:
+        if offset >= len(tickers):
+            offset = 0
+        curr_ticker = tickers[offset]
 
+        offset+=1
+        print(f"CURRENT TICKER : {curr_ticker}")
+        print()
+        print()
+        curr_stock_data = get_stock_data(offset,curr_ticker)
+        if not curr_stock_data:
+            print(f"OFFSET {offset} BREAKING")
+            break
+        print(f"STOCK DATA:")
+        stock_dict[curr_ticker] = curr_stock_data
+        #json_data["offset"]+=100
+        #save_json_to_file(json_path, json_data)
+    save_json_to_file("../stock_data.json", stock_dict)
+    offset_dict = {}
+    offset_dict["offset"] = offset
+    save_json_to_file(json_path, offset_dict["offset"])
 if __name__  == "__main__":
     get_financials()
