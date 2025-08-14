@@ -30,6 +30,10 @@ def get_tickers():
 
 
 
+
+
+
+
 def get_stock_data(offset,curr_ticker):
     load_dotenv()
     API_KEY = os.getenv("API_KEY")
